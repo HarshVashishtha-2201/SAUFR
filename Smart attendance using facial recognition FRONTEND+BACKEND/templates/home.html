@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance System</title>
+
+    <!--ALL CSS-->
+    <style>
+        :root {
+            --primary-color: #333;
+            --secondary-color: #5cd82b;
+            --background-color: #f4f4f4;
+            --text-color: #333;
+            --border-color: #ddd;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: var(--secondary-color);
+        }
+
+        main {
+            padding: 20px;
+            text-align: center;
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #4caf50;
+        }
+
+        #attendance, #records {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .attendance-record {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        .form-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .form-container label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .form-container button:hover {
+            background-color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <header id="header">
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#attendance">Take Attendance</a></li>
+                <li><a href="#adduser">Add New User</a></li>
+                <li><a href="#records">View Records</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#" id="logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="app"></main>
+
+
+<!--ALL JAVASCRIPTS-->
+    <script>
+        const routes = {
+            login: { title: 'Login', render: renderLogin, showNav: false },
+            signup: { title: 'Signup', render: renderSignup, showNav: false },
+            home: { title: 'Home', render: renderHome, showNav: true },
+            attendance: { title: 'Take Attendance', render: renderAttendance, showNav: true },
+            adduser: { title: 'Add New User', render: renderAddUser, showNav: true },
+            records: { title: 'View Records', render: renderRecords, showNav: true },
+            about: { title: 'About', render: renderAbout, showNav: true },
+            contact: { title: 'Contact', render: renderContact, showNav: true }
+        };
+
+        function navigate(route) {
+            const app = document.getElementById('app');
+            const header = document.getElementById('header');
+            app.innerHTML = '';
+            if (routes[route].showNav) {
+                header.style.display = 'block';
+            } else {
+                header.style.display = 'none';
+            }
+            routes[route].render(app);
+            document.title = `Student Attendance System - ${routes[route].title}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            navigate('login'); 
+
+            document.body.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A') {
+                    e.preventDefault();
+                    const route = e.target.getAttribute('href').substring(1);
+                    navigate(route);
+                }
+            });
+        });
+        function renderLogin(container) {
+    container.innerHTML = `
+      <div class="form-container">
+        <h1>Login</h1>
+        <form id="login-form">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required>
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+          <button type="submit">Login</button>
+        </form>
+        <p>Don't have an account? <a href="#signup">Sign up here</a></p>
+      </div>
+    `;
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      if (checkCredentials(username, password)) {
+        
+        localStorage.setItem('username', username);
+        localStorage.setItem('password', password);
+        navigate('home');
+      } else {
+        alert('Invalid username or password');
+      }
+    });
+  }
+
+  function renderSignup(container) {
+    container.innerHTML = `
+      <div class="form-container">
+        <h1>Sign Up</h1>
+        <form id="signup-form">
+          <label for="new-username">Username</label>
+          <input type="text" id="new-username" name="username" required>
+          <label for="new-password">Password</label>
+          <input type="password" id="new-password" name="password" required>
+          <button type="submit">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="#login">Login here</a></p>
+      </div>
+    `;
+    document.getElementById('signup-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newUsername = document.getElementById('new-username').value;
+      const newPassword = document.getElementById('new-password').value;
+      
+      localStorage.setItem('username', newUsername);
+      localStorage.setItem('password', newPassword);
+      navigate('login'); 
+    });
+  }
+
+  function checkCredentials(username, password) {
+
+    const storedUsername = localStorage.getItem('username');
+    const storedPassword = localStorage.getItem('password');
+    if (storedUsername === username && storedPassword === password) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+        function renderHome(container) {
+            container.innerHTML = `
+                <h1>Welcome to the Student Attendance System</h1>
+                <p>Use facial recognition to mark attendance and view attendance records.</p>
+                <img src="https://d2lk14jtvqry1q.cloudfront.net/media/large_GLA_University_Mathura_bf39757d70_218560b27a.png" alt="Student Attendance System Logo" width="800" height="250">
+            `;
+        }
+
+        function renderAttendance(container) {
+            container.innerHTML = `
+                <h1>Take Attendance</h1>
+               <hr> <button id="startAttendance">Start Attendance</button></hr>
+                <div id="attendanceStatus"></div>
+                <div id="attendanceRecords"></div>
+            `;
+            document.getElementById('startAttendance').addEventListener('click', startAttendanceProcess);
+        }
+
+        function startAttendanceProcess() {
+            const statusDiv = document.getElementById('attendanceStatus');
+            statusDiv.textContent = 'Attendance process started. Please wait...';
+
+            fetch('/start')
+                .then(response => response.text())
+                .then(data => {
+                    statusDiv.textContent = 'Attendance process completed.';
+                    updateAttendanceRecords();
+                })
+                .catch(error => {
+                    console.error('Error during attendance process:', error);
+                    statusDiv.textContent = 'An error occurred during the attendance process.';
+                });
+        }
+
+        function updateAttendanceRecords() {
+            fetch('/attendance_data')
+                .then(response => response.json())
+                .then(data => {
+                    const recordsDiv = document.getElementById('attendanceRecords');
+                    recordsDiv.innerHTML = '<h2>Today\'s Attendance</h2>';
+                    const table = document.createElement('table');
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Roll</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.records.map(record => `
+                                <tr>
+                                    <td>${record.Name}</td>
+                                    <td>${record.Roll}</td>
+                                    <td>${record.Time}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    `;
+                    recordsDiv.appendChild(table);
+                })
+                .catch(error => console.error('Error fetching attendance records:', error));
+        }
+
+        function renderAddUser(container) {
+            container.innerHTML = `
+                <h1>Add New User</h1>
+                <form id="add-user-form">
+                    <label for="newusername">Enter New User Name*</label>
+                    <input type="text" id="newusername" name='newusername' required>
+                    <label for="newuserid">Enter New User ID*</label>
+                    <input type="number" id="newuserid" name='newuserid' required>
+                    <button type='submit'>Add New User</button>
+                </form>
+                <div id="addUserStatus"></div>
+            `;
+            document.getElementById('add-user-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                addNewUser();
+            });
+        }
+
+        function addNewUser() {
+            const form = document.getElementById('add-user-form');
+            const statusDiv = document.getElementById('addUserStatus');
+            const formData = new FormData(form);
+
+            fetch('/add', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                statusDiv.textContent = 'User added successfully.';
+                form.reset();
+            })
+            .catch(error => {
+                console.error('Error adding new user:', error);
+                statusDiv.textContent = 'An error occurred while adding the new user.';
+            });
+        }
+
+        function renderRecords(container) {
+            container.innerHTML = `
+              <h1>View Attendance Records</h1>
+              <h2> The records will show after you Take attendance<h2></hr>
+            <div id="recordsContainer"></div>
+            `;
+            updateRecords();
+        }
+
+        function updateRecords() {
+            fetch('/attendance_data')
+                .then(response => response.json())
+                .then(data => {
+                    const recordsContainer = document.getElementById('recordsContainer');
+                    recordsContainer.innerHTML = `
+                        <table id="records-table">
+                            <thead>
+                                <tr>
+                                    <th>S No</th>
+                                    <th>Name</th>
+                                    <th>ID</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.records.map((record, index) => `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${record.Name}</td>
+                                        <td>${record.Roll}</td>
+                                        <td>${record.Time}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                })
+                .catch(error => console.error('Error fetching records:', error));
+        }
+
+        function renderAbout(container) {
+            container.innerHTML = `
+                <h1>About Us</h1>
+                <p>We are a team dedicated to improving attendance management through technology.</p>
+            `;
+        }
+
+        function renderContact(container) {
+            container.innerHTML = `
+                <h1>Contact Us</h1>
+                <p>If you have any questions, feel free to reach us at college@gla.ac.in</p>
+            `;
+        }
+    </script>
+</body>
+</html>
